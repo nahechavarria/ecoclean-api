@@ -1,26 +1,91 @@
-import { UserRepository } from "../../../core/ports/UserRepository";
-import { User } from "../../../core/domain/User";
-import { UserModel } from "./UserModel";
+import { UserRepository } from '../../../core/ports/UserRepository';
+import { User } from '../../../core/domain/User';
+import { getDB } from '../../config/database';
+import { ObjectId } from 'mongodb';
 
 export class UserRepositoryImpl implements UserRepository {
-    async create(user: User): Promise<User> {
-        const newUser = new UserModel(user);
-        const savedUser = await newUser.save();
-        return new User(savedUser.id, savedUser.name as string, savedUser.lastname as string, savedUser.email as string, savedUser.role as string, savedUser.picture as string);
-    }
-    async findById(id: string): Promise<User | null> {
-        const user = await UserModel.findById(id);
-        return user ? new User(user.id, user.name as string, user.lastname as string, user.email as string, user.role as string, user.picture as string) : null;
-    }
-    async findAll(): Promise<User[]> {
-        return (await UserModel.find()).map((user) => new User(user.id, user.name as string, user.lastname as string, user.email as string, user.role as string, user.picture as string));
-    }
-    async update(id: string, data: Partial<User>): Promise<User | null> {
-        const updatedUser = await UserModel.findByIdAndUpdate(id, data, {new: true});
-        return updatedUser ? new User(updatedUser.id, updatedUser.name as string, updatedUser.lastname as string, updatedUser.email as string, updatedUser.role as string, updatedUser.picture as string) : null;
-    }
-    async delete(id: string): Promise<boolean> {
-        const result = await UserModel.findByIdAndDelete(id);
-        return !!result;
-    }
+	private collection = 'users';
+
+	async create(user: User): Promise<User> {
+		const db = getDB();
+		const result = await db.collection(this.collection).insertOne({
+			name: user.name,
+			lastname: user.lastname,
+			email: user.email,
+			role: user.role,
+			picture: user.picture,
+		});
+
+		return new User(
+			result.insertedId.toString(),
+			user.name,
+			user.lastname,
+			user.email,
+			user.role,
+			user.picture
+		);
+	}
+
+	async getById(id: string): Promise<User | null> {
+		const db = getDB();
+		const user = await db
+			.collection(this.collection)
+			.findOne({ _id: new ObjectId(id) });
+		return user
+			? new User(
+					user._id.toString(),
+					user.name,
+					user.lastname,
+					user.email,
+					user.role,
+					user.picture
+			  )
+			: null;
+	}
+
+	async getAll(): Promise<User[]> {
+		const db = getDB();
+		const users = await db.collection(this.collection).find().toArray();
+		return users.map(
+			(user) =>
+				new User(
+					user._id.toString(),
+					user.name,
+					user.lastname,
+					user.email,
+					user.role,
+					user.picture
+				)
+		);
+	}
+
+	async update(id: string, data: Partial<User>): Promise<User | null> {
+		const db = getDB();
+		const result = await db
+			.collection(this.collection)
+			.findOneAndUpdate(
+				{ _id: new ObjectId(id) },
+				{ $set: data },
+				{ returnDocument: 'after' }
+			);
+
+		return result
+			? new User(
+					result._id.toString(),
+					result.name,
+					result.lastname,
+					result.email,
+					result.role,
+					result.picture
+			  )
+			: null;
+	}
+
+	async delete(id: string): Promise<boolean> {
+		const db = getDB();
+		const result = await db
+			.collection(this.collection)
+			.deleteOne({ _id: new ObjectId(id) });
+		return result.deletedCount > 0;
+	}
 }
