@@ -10,19 +10,17 @@ export class UserRepositoryImpl implements UserRepository {
 		const db = getDB();
 		const result = await db.collection(this.collection).insertOne({
 			name: user.name,
-			lastname: user.lastname,
 			email: user.email,
 			role: user.role,
-			picture: user.picture,
+			containers: user.containers,
 		});
 
 		return new User(
 			result.insertedId.toString(),
 			user.name,
-			user.lastname,
 			user.email,
 			user.role,
-			user.picture
+			user.containers
 		);
 	}
 
@@ -35,10 +33,9 @@ export class UserRepositoryImpl implements UserRepository {
 			? new User(
 					user._id.toString(),
 					user.name,
-					user.lastname,
 					user.email,
 					user.role,
-					user.picture
+					user.containers
 			  )
 			: null;
 	}
@@ -51,10 +48,9 @@ export class UserRepositoryImpl implements UserRepository {
 				new User(
 					user._id.toString(),
 					user.name,
-					user.lastname,
 					user.email,
 					user.role,
-					user.picture
+					user.containers
 				)
 		);
 	}
@@ -73,10 +69,9 @@ export class UserRepositoryImpl implements UserRepository {
 			? new User(
 					result._id.toString(),
 					result.name,
-					result.lastname,
 					result.email,
 					result.role,
-					result.picture
+					result.containers
 			  )
 			: null;
 	}
@@ -87,5 +82,37 @@ export class UserRepositoryImpl implements UserRepository {
 			.collection(this.collection)
 			.deleteOne({ _id: new ObjectId(id) });
 		return result.deletedCount > 0;
+	}
+
+	async addContainer(
+		userId: string,
+		containerId: string
+	): Promise<User | null> {
+		const db = getDB();
+
+		const result = await db
+			.collection(this.collection)
+			.findOneAndUpdate(
+				{ _id: new ObjectId(userId) },
+				{ $addToSet: { containers: containerId } },
+				{ returnDocument: 'after' }
+			);
+
+		return result
+			? (await db
+					.collection('containers')
+					.findOneAndUpdate(
+						{ _id: new ObjectId(containerId) },
+						{ $set: { owner: new ObjectId(userId) } },
+						{ returnDocument: 'after' }
+					),
+			  new User(
+					result._id.toString(),
+					result.name,
+					result.email,
+					result.role,
+					result.containers
+			  ))
+			: null;
 	}
 }

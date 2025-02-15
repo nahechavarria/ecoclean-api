@@ -18,10 +18,10 @@ export const ContainerController = {
 		try {
 			const container = req.body;
 			const savedContainer = await createContainer.execute(
-				container.description,
-				container.serialNumber,
+				container.code,
+				container.size,
 				container.status,
-				container.location
+				container.owner
 			);
 
 			savedContainer
