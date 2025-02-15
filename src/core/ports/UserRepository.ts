@@ -6,4 +6,5 @@ export interface UserRepository {
 	getAll(): Promise<User[]>;
 	update(id: string, data: Partial<User>): Promise<User | null>;
 	delete(id: string): Promise<boolean>;
+	addContainer(userId: string, containerId: string): Promise<User | null>;
 }

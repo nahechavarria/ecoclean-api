@@ -9,18 +9,18 @@ export class ContainerRepositoryImpl implements ContainerRepository {
 	async create(container: Container): Promise<Container> {
 		const db = getDB();
 		const result = await db.collection(this.collection).insertOne({
-			description: container.description,
-			serialNumber: container.serialNumber,
+			code: container.code,
+			size: container.size,
 			status: container.status,
-			location: container.location,
+			owner: container.owner,
 		});
 
 		return new Container(
 			result.insertedId.toString(),
-			container.description,
-			container.serialNumber,
+			container.code,
+			container.size,
 			container.status,
-			container.location
+			container.owner
 		);
 	}
 
@@ -33,10 +33,10 @@ export class ContainerRepositoryImpl implements ContainerRepository {
 		return container
 			? new Container(
 					container._id.toString(),
-					container.desciption,
-					container.serialNumber,
+					container.code,
+					container.size,
 					container.status,
-					container.location
+					container.owner
 			  )
 			: null;
 	}
@@ -48,10 +48,10 @@ export class ContainerRepositoryImpl implements ContainerRepository {
 			(container) =>
 				new Container(
 					container._id.toString(),
-					container.description,
-					container.serialNumber,
+					container.code,
+					container.size,
 					container.status,
-					container.location
+					container.owner
 				)
 		);
 	}
@@ -72,10 +72,10 @@ export class ContainerRepositoryImpl implements ContainerRepository {
 		return result
 			? new Container(
 					result._id.toString(),
-					result.description,
-					result.serialNumber,
+					result.code,
+					result.size,
 					result.status,
-					result.location
+					result.owner
 			  )
 			: null;
 	}

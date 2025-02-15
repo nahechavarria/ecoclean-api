@@ -4,6 +4,7 @@ import { DeleteUser } from '../../../application/use-cases/user/DeleteUser';
 import { GetAllUsers } from '../../../application/use-cases/user/GetAllUsers';
 import { GetUser } from '../../../application/use-cases/user/GetUser';
 import { UpdateUser } from '../../../application/use-cases/user/UpdateUser';
+import { ContainerAdder } from '../../../application/use-cases/ContainerAdder';
 import { UserRepositoryImpl } from '../persistence/UserRepositoryImpl';
 
 const userRepository = new UserRepositoryImpl();
@@ -12,18 +13,20 @@ const deleteUser = new DeleteUser(userRepository);
 const getAllUsers = new GetAllUsers(userRepository);
 const getUser = new GetUser(userRepository);
 const updateUser = new UpdateUser(userRepository);
+const addContainer = new ContainerAdder(userRepository);
 
 export const UserController = {
 	async create(req: Request, res: Response) {
 		try {
 			const user = req.body;
+
 			const savedUser = await createUser.execute(
 				user.name,
-				user.lastname,
 				user.email,
 				user.role,
-				user.picture
+				user.containers ? user.containers : []
 			);
+
 			savedUser
 				? res.status(201).json(user)
 				: res.status(404).json({ message: 'User not found' });
@@ -77,6 +80,21 @@ export const UserController = {
 				: res.status(404).json({ message: 'User not found' });
 		} catch (err) {
 			res.status(500).json({ message: 'Error updating user', err });
+		}
+	},
+
+	async addCont(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const data = req.body;
+
+			const result = await addContainer.execute(id, data._id);
+
+			result
+				? res.json(result)
+				: res.status(404).json({ message: 'Error adding container' });
+		} catch (err) {
+			res.status(500).json({ message: 'Error adding container', err });
 		}
 	},
 };
