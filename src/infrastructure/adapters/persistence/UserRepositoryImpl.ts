@@ -2,6 +2,7 @@ import { UserRepository } from '../../../core/ports/UserRepository';
 import { User } from '../../../core/domain/User';
 import { getDB } from '../../config/database';
 import { ObjectId } from 'mongodb';
+import { Container } from '../../../core/domain/Container';
 
 export class UserRepositoryImpl implements UserRepository {
 	private collection = 'users';
@@ -114,5 +115,39 @@ export class UserRepositoryImpl implements UserRepository {
 					result.containers
 			  ))
 			: null;
+	}
+
+	async deleteContainer(userId: string, containerId: string): Promise<boolean> {
+		const db = getDB();
+
+		const user = await db
+			.collection(this.collection)
+			.findOne({ _id: new ObjectId(userId) });
+
+		const arr: string[] = user?.containers;
+		const newArr: string[] = this.deleteArray(containerId, arr);
+
+		const result = await db
+			.collection(this.collection)
+			.updateOne(
+				{ _id: new ObjectId(userId) },
+				{ $set: { containers: newArr } }
+			);
+
+		if (result) {
+			await db
+				.collection('containers')
+				.updateOne(
+					{ _id: new ObjectId(containerId) },
+					{ $set: { owner: null } }
+				);
+		}
+
+		return result.matchedCount > 0;
+	}
+
+	deleteArray(id: string, arr: string[]): string[] {
+		const newArr = arr.filter((arr) => arr !== id);
+		return newArr ? newArr : [];
 	}
 }

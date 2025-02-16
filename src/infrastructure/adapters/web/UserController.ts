@@ -5,6 +5,7 @@ import { GetAllUsers } from '../../../application/use-cases/user/GetAllUsers';
 import { GetUser } from '../../../application/use-cases/user/GetUser';
 import { UpdateUser } from '../../../application/use-cases/user/UpdateUser';
 import { ContainerAdder } from '../../../application/use-cases/ContainerAdder';
+import { ContainerDeleter } from '../../../application/use-cases/ContainerDeleter';
 import { UserRepositoryImpl } from '../persistence/UserRepositoryImpl';
 
 const userRepository = new UserRepositoryImpl();
@@ -13,7 +14,8 @@ const deleteUser = new DeleteUser(userRepository);
 const getAllUsers = new GetAllUsers(userRepository);
 const getUser = new GetUser(userRepository);
 const updateUser = new UpdateUser(userRepository);
-const addContainer = new ContainerAdder(userRepository);
+const containerAdder = new ContainerAdder(userRepository);
+const containerDeleter = new ContainerDeleter(userRepository);
 
 export const UserController = {
 	async create(req: Request, res: Response) {
@@ -83,18 +85,32 @@ export const UserController = {
 		}
 	},
 
-	async addCont(req: Request, res: Response) {
+	async addContainer(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const data = req.body;
 
-			const result = await addContainer.execute(id, data._id);
+			const result = await containerAdder.execute(id, data._id);
 
 			result
 				? res.json(result)
 				: res.status(404).json({ message: 'Error adding container' });
 		} catch (err) {
 			res.status(500).json({ message: 'Error adding container', err });
+		}
+	},
+
+	async deleteContainer(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const data = req.body;
+
+			const result = await containerDeleter.execute(id, data._id);
+			result
+				? res.json(result)
+				: res.status(400).json({ message: 'Something went wrong' });
+		} catch (err) {
+			res.status(500).json({ message: 'Error deleting container', err });
 		}
 	},
 };

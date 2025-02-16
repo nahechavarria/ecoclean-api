@@ -19,6 +19,7 @@ router.delete('/containers/:id', ContainerController.delete);
 router.put('/containers/:id', ContainerController.update);
 
 // containers from users
-router.put('/users/:id/containers', UserController.addCont);
+router.put('/users/:id/containers', UserController.addContainer);
+router.patch('/users/:id/containers', UserController.deleteContainer);
 
 export default router;
