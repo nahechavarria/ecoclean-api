@@ -1,6 +1,6 @@
+import { ObjectId } from 'mongodb';
 import { User } from '../../../core/domain/User';
 import { UserRepository } from '../../../core/ports/UserRepository';
-import { ObjectId } from 'mongodb';
 
 export class CreateUser {
 	constructor(private userRepository: UserRepository) {}
@@ -9,7 +9,7 @@ export class CreateUser {
 		name: string,
 		email: string,
 		role: string,
-		containers: ObjectId[]
+		containers: string[]
 	): Promise<User> {
 		const user = new User('', name, email, role, containers);
 		return await this.userRepository.create(user);
