@@ -1,9 +1,10 @@
 import express from 'express';
 import logger from 'morgan';
-import router from './infrastructure/adapters/web/routes';
-import { errorHandler } from './infrastructure/middleware/errorHandle';
-import { connectDB } from "./infrastructure/config/database";
+import { router } from './infrastructure/routes';
+import { errorHandler } from './infrastructure/http/middlewares';
+import { connectDB } from './infrastructure/database';
 import cors from 'cors';
+import './config';
 
 // Initializations
 const app = express();
